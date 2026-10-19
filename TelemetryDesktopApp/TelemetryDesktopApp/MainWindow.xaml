@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="TelemetryDesktopApp.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="IoT Dashboard">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid Padding="30">
+        <StackPanel Spacing="20">
+
+            <ListView x:Name="SensorList"
+                      Height="400"
+                      FontSize="28"/>
+
+        </StackPanel>
+    </Grid>
+</Window>

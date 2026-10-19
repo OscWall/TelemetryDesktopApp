@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "TelemetryDesktopApp (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "TelemetryDesktopApp (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
