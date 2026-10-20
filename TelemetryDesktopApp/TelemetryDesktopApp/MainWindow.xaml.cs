@@ -1,6 +1,8 @@
 
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -22,7 +24,19 @@ public sealed partial class MainWindow : Window
     private bool _isLoading;
 
     private const string ApiUrl =
-        "http://10.50.247.132:8000/api/devices";
+        "http://127.0.0.1:8000/api/devices";
+
+    private static readonly SolidColorBrush OnlineBrush =
+        new(Colors.Green);
+
+    private static readonly SolidColorBrush OfflineBrush =
+        new(Colors.Red);
+
+    private static readonly SolidColorBrush NeutralBrush =
+        new(Colors.Gray);
+
+    // Senaste mätning per enhet och mätenhet.
+    private readonly Dictionary<string, DateTime> _lastUpdated = new();
 
     public MainWindow()
     {
@@ -47,26 +61,41 @@ public sealed partial class MainWindow : Window
 
         try
         {
-            var sensors = await _client.GetTelemetryAsync(ApiUrl);
+            var sensors = (await _client.GetTelemetryAsync(ApiUrl)).ToList();
 
             ConnectionStatusText.Text = "API anslutet";
 
-            // Översikt: senaste temperatur och luftfuktighet.
-            var temperature = sensors
-                .Where(s => s.Unit == "°C")
-                .OrderByDescending(s => s.MeasuredAtUTC)
-                .FirstOrDefault();
+            // Beräkna genomsnittet från senaste giltiga värdet
+            // för varje enhet och mätenhet.
+            var latestTemperatures = sensors
+                .Where(s => s.Unit == "°C" && s.Value.HasValue)
+                .GroupBy(s => s.DeviceId)
+                .Select(g => g
+                    .OrderByDescending(s => s.MeasuredAtUTC)
+                    .First());
 
-            var humidity = sensors
-                .Where(s => s.Unit == "%")
-                .OrderByDescending(s => s.MeasuredAtUTC)
-                .FirstOrDefault();
+            var latestHumidities = sensors
+                .Where(s => s.Unit == "%" && s.Value.HasValue)
+                .GroupBy(s => s.DeviceId)
+                .Select(g => g
+                    .OrderByDescending(s => s.MeasuredAtUTC)
+                    .First());
 
-            TemperatureValueText.Text =
-                FormatValue(temperature, "°C");
+            var temperatures = latestTemperatures
+                .Select(s => s.Value!.Value)
+                .ToList();
 
-            HumidityValueText.Text =
-                FormatValue(humidity, "%");
+            var humidities = latestHumidities
+                .Select(s => s.Value!.Value)
+                .ToList();
+
+            TemperatureValueText.Text = temperatures.Count > 0
+                ? $"{temperatures.Average():0.0} °C"
+                : "-- °C";
+
+            HumidityValueText.Text = humidities.Count > 0
+                ? $"{humidities.Average():0.0} %"
+                : "-- %";
 
             // ESP32 #1
             UpdateDevice(
@@ -126,7 +155,7 @@ public sealed partial class MainWindow : Window
             : $"-- {unit}";
     }
 
-    private static void UpdateDevice(
+    private void UpdateDevice(
         IEnumerable<TelemetryData> sensors,
         string deviceId,
         TextBlock statusText,
@@ -141,9 +170,12 @@ public sealed partial class MainWindow : Window
         if (deviceData.Count == 0)
         {
             statusText.Text = "Ingen data";
+            statusText.Foreground = NeutralBrush;
+
             temperatureText.Text = "-- °C";
             humidityText.Text = "-- %";
-            updatedText.Text = "Ingen uppdatering ännu";
+            updatedText.Text = "Updated --";
+
             return;
         }
 
@@ -166,11 +198,74 @@ public sealed partial class MainWindow : Window
 
         statusText.Text = latest.Status;
 
-        updatedText.Text = latest.MeasuredAtUTC.HasValue
-            ? "Senast uppdaterad: " +
-              latest.MeasuredAtUTC.Value
-                  .ToLocalTime()
-                  .ToString("HH:mm:ss")
-            : "Tid saknas";
+        // Statusfärg baserad på API-statusen.
+        string status = latest.Status ?? "";
+
+        if (status.Contains("offline", StringComparison.OrdinalIgnoreCase)
+            || status.Contains("disconnected", StringComparison.OrdinalIgnoreCase)
+            || status.Contains("error", StringComparison.OrdinalIgnoreCase))
+        {
+            statusText.Foreground = OfflineBrush;
+        }
+        else if (status.Contains("online", StringComparison.OrdinalIgnoreCase)
+                 || status.Contains("connected", StringComparison.OrdinalIgnoreCase))
+        {
+            statusText.Foreground = OnlineBrush;
+        }
+        else
+        {
+            statusText.Foreground = NeutralBrush;
+        }
+
+        // Visa relativ tid baserad på senaste mätningen.
+        if (latest.MeasuredAtUTC.HasValue)
+        {
+            DateTime measuredAt = latest.MeasuredAtUTC.Value;
+
+            if (measuredAt.Kind == DateTimeKind.Unspecified)
+                measuredAt = DateTime.SpecifyKind(
+                    measuredAt, DateTimeKind.Utc);
+
+            measuredAt = measuredAt.ToUniversalTime();
+
+            _lastUpdated[deviceId] = measuredAt;
+
+            TimeSpan elapsed = DateTime.UtcNow - measuredAt;
+
+            if (elapsed < TimeSpan.Zero)
+                elapsed = TimeSpan.Zero;
+
+            updatedText.Text = FormatElapsed(elapsed);
+        }
+        else
+        {
+            updatedText.Text = "Updated: time unavailable";
+        }
+    }
+
+    private static string FormatElapsed(TimeSpan elapsed)
+    {
+        if (elapsed.TotalSeconds < 60)
+        {
+            int seconds = Math.Max(0, (int)elapsed.TotalSeconds);
+
+            return $"Updated {seconds} seconds ago";
+        }
+
+        if (elapsed.TotalMinutes < 60)
+        {
+            int minutes = (int)elapsed.TotalMinutes;
+
+            return $"Updated {minutes} minutes ago";
+        }
+
+        int hours = (int)elapsed.TotalHours;
+
+        if (hours < 24)
+            return $"Updated {hours} hours ago";
+
+        int days = (int)elapsed.TotalDays;
+
+        return $"Updated {days} days ago";
     }
 }

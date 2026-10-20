@@ -69,18 +69,24 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- TEMPERATURE -->
+                    <!-- AVERAGE TEMPERATURE -->
                     <Border
                         Grid.Column="1"
                         Background="#E9F0FF"
                         CornerRadius="16"
                         Padding="20">
 
-                        <StackPanel Spacing="12">
+                        <StackPanel Spacing="10">
                             <TextBlock
-                                Text="Temperatur"
+                                Text="Genomsnittlig temperatur"
                                 FontSize="14"
-                                Foreground="#60749C"/>
+                                Foreground="#60749C"
+                                TextWrapping="Wrap"/>
+
+                            <TextBlock
+                                Text="Average · alla sensorer"
+                                FontSize="12"
+                                Foreground="#75839A"/>
 
                             <TextBlock
                                 x:Name="TemperatureValueText"
@@ -91,18 +97,24 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- HUMIDITY -->
+                    <!-- AVERAGE HUMIDITY -->
                     <Border
                         Grid.Column="2"
                         Background="#F0EAFE"
                         CornerRadius="16"
                         Padding="20">
 
-                        <StackPanel Spacing="12">
+                        <StackPanel Spacing="10">
                             <TextBlock
-                                Text="Luftfuktighet"
+                                Text="Genomsnittlig luftfuktighet"
                                 FontSize="14"
-                                Foreground="#8069A3"/>
+                                Foreground="#8069A3"
+                                TextWrapping="Wrap"/>
+
+                            <TextBlock
+                                Text="Average · alla sensorer"
+                                FontSize="12"
+                                Foreground="#75839A"/>
 
                             <TextBlock
                                 x:Name="HumidityValueText"
@@ -149,11 +161,13 @@
                             <TextBlock
                                 x:Name="NanoStatusText"
                                 Text="Väntar på data"
-                                Foreground="#A36F35"/>
+                                Foreground="#16A34A"
+                                FontWeight="SemiBold"/>
 
                             <TextBlock
-                                Text="Temperatur"
-                                Foreground="#75839A"/>
+                                Text="Temperatur · qurat-esp32-01"
+                                Foreground="#75839A"
+                                TextWrapping="Wrap"/>
 
                             <TextBlock
                                 x:Name="NanoTemperatureText"
@@ -163,8 +177,9 @@
                                 Foreground="#304E87"/>
 
                             <TextBlock
-                                Text="Luftfuktighet"
-                                Foreground="#75839A"/>
+                                Text="Luftfuktighet · qurat-esp32-01"
+                                Foreground="#75839A"
+                                TextWrapping="Wrap"/>
 
                             <TextBlock
                                 x:Name="NanoHumidityText"
@@ -175,7 +190,7 @@
 
                             <TextBlock
                                 x:Name="NanoUpdatedText"
-                                Text="Ingen uppdatering ännu"
+                                Text="Updated --"
                                 FontSize="12"
                                 Foreground="#75839A"/>
                         </StackPanel>
@@ -203,11 +218,13 @@
                             <TextBlock
                                 x:Name="S3StatusText"
                                 Text="Väntar på data"
-                                Foreground="#A36F35"/>
+                                Foreground="#16A34A"
+                                FontWeight="SemiBold"/>
 
                             <TextBlock
-                                Text="Temperatur"
-                                Foreground="#75839A"/>
+                                Text="Temperatur · qurat-esp32-s3-02"
+                                Foreground="#75839A"
+                                TextWrapping="Wrap"/>
 
                             <TextBlock
                                 x:Name="S3TemperatureText"
@@ -217,8 +234,9 @@
                                 Foreground="#304E87"/>
 
                             <TextBlock
-                                Text="Luftfuktighet"
-                                Foreground="#75839A"/>
+                                Text="Luftfuktighet · qurat-esp32-s3-02"
+                                Foreground="#75839A"
+                                TextWrapping="Wrap"/>
 
                             <TextBlock
                                 x:Name="S3HumidityText"
@@ -229,7 +247,7 @@
 
                             <TextBlock
                                 x:Name="S3UpdatedText"
-                                Text="Ingen uppdatering ännu"
+                                Text="Updated --"
                                 FontSize="12"
                                 Foreground="#75839A"/>
                         </StackPanel>
@@ -298,7 +316,7 @@
                             Foreground="#24324B"/>
 
                         <TextBlock
-                            Text="http://10.50.247.132:8000/api/devices"
+                            Text="http://127.0.0.1:8000/api/devices"
                             TextWrapping="Wrap"
                             Foreground="#75839A"/>
 
