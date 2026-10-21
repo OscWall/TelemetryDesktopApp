@@ -198,8 +198,8 @@ public sealed partial class MainWindow : Window
 
         if (deviceData.Count == 0)
         {
-            statusText.Text = "Ingen data";
-            statusText.Foreground = NeutralBrush;
+            statusText.Text = "Offline";
+            statusText.Foreground = OfflineBrush;
 
             temperatureText.Text = "-- °C";
             humidityText.Text = "-- %";
